@@ -1,8 +1,10 @@
 const request = require('supertest');
 const app = require('../../lib/app');
 
+jest.mock('../../lib/middleware/mail/configureMail');
+
 describe('contact routes', () => {
-  it('sends email inquiry', () => {
+  it('sends email inquiry with confirmation', done => {
     return request(app)
       .post('/contact')
       .send({
@@ -12,7 +14,15 @@ describe('contact routes', () => {
           text: 'Test email via ethereal!!'
         }
       })
-      .then(res => expect(res.body.previewUrl).toBeTruthy());
+      .then(res => {
+        const { previewUrl, previewUrlConfirm } = res.body;
+
+        expect(previewUrl).toBeTruthy();
+
+        expect(previewUrlConfirm).toBeTruthy();
+
+        done();
+      });
   });
 
   it('errors on invalid submission', () => {
